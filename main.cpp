@@ -13,8 +13,6 @@ struct alignas(64) Planet {
   double mass;
   double x;
   double y;
-  double vx;
-  double vy;
 };
 
 unsigned long long seed = 100;
@@ -44,15 +42,20 @@ struct PlanetMaintentance {
   std::vector<Planet> next;
 };
 
-void next(PlanetMaintentance &planetsM) {
+struct PlanetVelocity {
+  std::vector<double> vx;
+  std::vector<double> vy;
+};
+
+void next(PlanetMaintentance &planetsM, PlanetVelocity &v) {
   auto &planets = planetsM.current;
   auto &nextplanets = planetsM.next;
   // Planet *nextplanets =
   //     (Planet *)std::aligned_alloc(alignof(Planet), sizeof(Planet) *
   //     nplanets);
   for (int i = 0; i < nplanets; i++) {
-    nextplanets[i].vx = planets[i].vx;
-    nextplanets[i].vy = planets[i].vy;
+    // nextplanets[i].vx = planets[i].vx;
+    // nextplanets[i].vy = planets[i].vy;
     nextplanets[i].mass = planets[i].mass;
     nextplanets[i].x = planets[i].x;
     nextplanets[i].y = planets[i].y;
@@ -76,8 +79,8 @@ void next(PlanetMaintentance &planetsM) {
   }
 
   for (alignas(64) int i = 0; i < nplanets; i++) {
-    nextplanets[i].x += dt * nextplanets[i].vx;
-    nextplanets[i].y += dt * nextplanets[i].vy;
+    nextplanets[i].x += dt * v.vx[i];
+    nextplanets[i].y += dt * v.vy[i];
   }
   // free(planets);
   // return nextplanets;
@@ -98,6 +101,8 @@ int main(int argc, const char **argv) {
 
   PlanetMaintentance pm{.current = std::vector<Planet>(nplanets),
                         .next = std::vector<Planet>(nplanets)};
+  PlanetVelocity v{.vx = std::vector<double>(nplanets),
+                   .vy = std::vector<double>(nplanets)};
 
   auto &planets = pm.current;
 
@@ -105,14 +110,14 @@ int main(int argc, const char **argv) {
     planets[i].mass = randomDouble() + 0.1;
     planets[i].x = randomDouble() * 100 - 50;
     planets[i].y = randomDouble() * 100 - 50;
-    planets[i].vx = randomDouble() * 5 - 2.5;
-    planets[i].vy = randomDouble() * 5 - 2.5;
+    v.vx[i] = randomDouble() * 5 - 2.5;
+    v.vy[i] = randomDouble() * 5 - 2.5;
   }
 
   struct timeval start, end;
   gettimeofday(&start, NULL);
   for (int i = 0; i < timesteps; i++) {
-    next(pm);
+    next(pm, v);
     std::swap(pm.current, pm.next);
     // Planet *tmp = pm.current;
     // pm.current = pm.next;
