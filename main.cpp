@@ -1,4 +1,5 @@
 #include <math.h>
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -61,6 +62,7 @@ void next(PlanetMaintentance &planetsM, PlanetVelocity &v) {
     nextplanets[i].y = planets[i].y;
   }
 
+#pragma omp parallel for schedule(dynamic)
   for (alignas(64) int i = 0; i < nplanets; i++) {
     // nextplanets[i].vx = planets[i].vx;
     // nextplanets[i].vy = planets[i].vy;
