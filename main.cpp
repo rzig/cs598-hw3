@@ -73,6 +73,9 @@ void next(PlanetMaintentance &planetsM) {
       nextplanets[i].x += dx * invDist3;
       nextplanets[i].y += dy * invDist3;
     }
+  }
+
+  for (alignas(64) int i = 0; i < nplanets; i++) {
     nextplanets[i].x += dt * nextplanets[i].vx;
     nextplanets[i].y += dt * nextplanets[i].vy;
   }
