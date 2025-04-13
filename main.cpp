@@ -44,26 +44,25 @@ struct PlanetMaintentance {
 };
 
 void next(PlanetMaintentance &planetsM) {
+  Planet *__restrict__ planets = planetsM.current;
+  Planet *__restrict__ nextplanets = planetsM.next;
   // Planet *nextplanets =
   //     (Planet *)std::aligned_alloc(alignof(Planet), sizeof(Planet) *
   //     nplanets);
-  // for (int i = 0; i < nplanets; i++) {
-  //   nextplanets[i].vx = planets[i].vx;
-  //   nextplanets[i].vy = planets[i].vy;
-  //   nextplanets[i].mass = planets[i].mass;
-  //   nextplanets[i].x = planets[i].x;
-  //   nextplanets[i].y = planets[i].y;
-  // }
-
-  Planet *planets = planetsM.current;
-  Planet *nextplanets = planetsM.next;
-
-  for (alignas(64) int i = 0; i < nplanets; i++) {
+  for (int i = 0; i < nplanets; i++) {
     nextplanets[i].vx = planets[i].vx;
     nextplanets[i].vy = planets[i].vy;
     nextplanets[i].mass = planets[i].mass;
     nextplanets[i].x = planets[i].x;
     nextplanets[i].y = planets[i].y;
+  }
+
+  for (alignas(64) int i = 0; i < nplanets; i++) {
+    // nextplanets[i].vx = planets[i].vx;
+    // nextplanets[i].vy = planets[i].vy;
+    // nextplanets[i].mass = planets[i].mass;
+    // nextplanets[i].x = planets[i].x;
+    // nextplanets[i].y = planets[i].y;
     for (alignas(64) int j = 0; j < nplanets; j++) {
       double dx = planets[j].x - planets[i].x;
       double dy = planets[j].y - planets[i].y;
