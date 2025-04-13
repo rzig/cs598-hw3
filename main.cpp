@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <sys/time.h>
+#include <vector>
 
 float tdiff(struct timeval *start, struct timeval *end) {
   return (end->tv_sec - start->tv_sec) + 1e-6 * (end->tv_usec - start->tv_usec);
@@ -39,13 +40,13 @@ double dt;
 double G;
 
 struct PlanetMaintentance {
-  Planet *current;
-  Planet *next;
+  std::vector<Planet> current;
+  std::vector<Planet> next;
 };
 
 void next(PlanetMaintentance &planetsM) {
-  Planet *__restrict__ planets = planetsM.current;
-  Planet *__restrict__ nextplanets = planetsM.next;
+  auto &planets = planetsM.current;
+  auto &nextplanets = planetsM.next;
   // Planet *nextplanets =
   //     (Planet *)std::aligned_alloc(alignof(Planet), sizeof(Planet) *
   //     nplanets);
@@ -89,8 +90,14 @@ int main(int argc, const char **argv) {
   dt = 0.1;
   G = 6.6743;
 
-  Planet *planets =
-      (Planet *)std::aligned_alloc(alignof(Planet), sizeof(Planet) * nplanets);
+  // std::vector<Planet> planets (nplanets);
+  // std::vector<Planet> nextplanets (nplanets);
+
+  PlanetMaintentance pm{.current = std::vector<Planet>(nplanets),
+                        .next = std::vector<Planet>(nplanets)};
+
+  auto &planets = pm.current;
+
   for (int i = 0; i < nplanets; i++) {
     planets[i].mass = randomDouble() + 0.1;
     planets[i].x = randomDouble() * 100 - 50;
@@ -99,17 +106,14 @@ int main(int argc, const char **argv) {
     planets[i].vy = randomDouble() * 5 - 2.5;
   }
 
-  Planet *nextplanets =
-      (Planet *)std::aligned_alloc(alignof(Planet), sizeof(Planet) * nplanets);
-
   struct timeval start, end;
   gettimeofday(&start, NULL);
-  PlanetMaintentance pm{.current = planets, .next = nextplanets};
   for (int i = 0; i < timesteps; i++) {
     next(pm);
-    Planet *tmp = pm.current;
-    pm.current = pm.next;
-    pm.next = tmp;
+    std::swap(pm.current, pm.next);
+    // Planet *tmp = pm.current;
+    // pm.current = pm.next;
+    // pm.next = tmp;
     // std::swap(pm.next, pm.current);
     // planets = next(planets);
     // printf("x=%f y=%f\n", planets[nplanets-1].x, planets[nplanets-1].y);
